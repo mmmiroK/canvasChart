@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        .myChart{
+            margin: 100px auto;
+            width: 600px;
+            height: 800px;
+            border: 1px solid;
+        }
+    </style>
+</head>
+<body>
+<div class="myChart">
+    <canvas id="myChart" height="800" width="600">你的浏览器不支持canvas，请更換其他浏览器试一试</canvas>
+</div>
+</body>
+<script src="../js/jquery.js"></script>
+<script type="text/javascript">
+    var dom=document.getElementById('myChart');
+    var ctx = dom.getContext("2d");
+    var width=dom.width;
+    var height=dom.height;
+    var data=[{"x":3.2,"y":0.16824490813348},{"x":3.2,"y":0.16824490813348},{"x":3.2,"y":0.16824490813348},{"x":3.3,"y":0.44937959211918},{"x":3.3,"y":0.44937959211918},{"x":3.4,"y":0.93671490988185},{"x":3.4,"y":0.93671490988185},{"x":3.4,"y":0.93671490988185},{"x":3.42,"y":1.0531372421445},{"x":3.43,"y":1.1125219288016},{"x":3.48,"y":1.4101815423922},{"x":3.48,"y":1.4101815423922},{"x":3.5,"y":1.5237867445121},{"x":3.52,"y":1.6302952510356},{"x":3.52,"y":1.6302952510356},{"x":3.52,"y":1.6302952510356},{"x":3.54,"y":1.7270354113168},{"x":3.55,"y":1.7709388771486},{"x":3.57,"y":1.8483231852383},{"x":3.59,"y":1.910051853087},{"x":3.6,"y":1.9344772226486},{"x":3.6,"y":1.9344772226486},{"x":3.6,"y":1.9344772226486},{"x":3.6,"y":1.9344772226486},{"x":3.6,"y":1.9344772226486},{"x":3.66,"y":1.9818106599414},{"x":3.66,"y":1.9818106599414},{"x":3.69,"y":1.9398805581169},{"x":3.7,"y":1.9165745666963},{"x":3.7,"y":1.9165745666963},{"x":3.7,"y":1.9165745666963},{"x":3.7,"y":1.9165745666963},{"x":3.72,"y":1.8569356808255},{"x":3.72,"y":1.8569356808255},{"x":3.73,"y":1.8210307172633},{"x":3.75,"y":1.738312176694},{"x":3.75,"y":1.738312176694},{"x":3.76,"y":1.6920681970047},{"x":3.76,"y":1.6920681970047},{"x":3.77,"y":1.6429758507276},{"x":3.79,"y":1.537543793334},{"x":3.8,"y":1.4818713164793},{"x":3.8,"y":1.4818713164793},{"x":3.81,"y":1.4246779929799},{"x":3.82,"y":1.3663003089014},{"x":3.83,"y":1.3070699914369},{"x":3.85,"y":1.1873366647451},{"x":3.85,"y":1.1873366647451},{"x":3.88,"y":1.009045225414},{"x":3.89,"y":0.95104850987347},{"x":3.9,"y":0.89416555058747},{"x":3.91,"y":0.83860302557089},{"x":3.92,"y":0.78454551272926},{"x":3.93,"y":0.73215509222426},{"x":3.96,"y":0.58626947303948},{"x":3.96,"y":0.58626947303948}];
+    //绘制左侧标题
+    function drawLeftLabel(){
+        ctx.beginPath();
+        ctx.font='22px arial';
+        ctx.fillText('GPA分佈',0,20);
+    }
+    //绘制X轴
+    function drawLabel(){
+        ctx.translate(0,280);
+        ctx.beginPath();
+        ctx.moveTo(0,0);
+        ctx.lineTo(width,0);
+        ctx.stroke();
+    }
+    //绘制平滑曲线
+    function drawLine(data){
+        ctx.beginPath();
+        ctx.moveTo(0,-data[0].y*100);
+        ctx.lineWidth=3;
+        ctx.strokeStyle='#5BB4D6';
+        $.each(data,function(i,item){
+             ctx.lineTo((item.x-data[0].x)*650,-item.y*100);
+        });
+        ctx.stroke();
+    }
+    //判断曲线极大值点坐标
+    function judgeExtremum(data){
+        var data1=[];
+        $.each(data,function(i,item){
+           data1[i]=item.y;
+        });
+        var maxy=data1[0],maxx=0;
+        for(var i=0;i<data.length;i++){
+            if(data1[i]-maxy>=0){
+                maxy=data1[i];
+                maxx=data[i].x;
+            }
+        }
+        return [maxx,maxy];
+    }
+    //写入最值提示
+    var MmValue=['最低分','最高分'];
+    function drawMmValue(data){
+        ctx.beginPath();
+        ctx.font='18px arial';
+        ctx.textBaseline='middle';
+        ctx.fillText(MmValue[0],0,20);
+        ctx.textAlign='center';
+        ctx.fillText(MmValue[1],(data[data.length-1].x-data[0].x)*650,20);
+        ctx.fillText(data[data.length-1].x,(data[data.length-1].x-data[0].x)*650,-12);
+        ctx.textAlign='left';
+        ctx.fillText(data[0].x,5,-12);
+    }
+    //在极大值坐标写入提示信息“大多數人得分”
+    function drawMostFrequentValue(data){
+        var mostFV=judgeExtremum(data);
+        ctx.beginPath();
+        ctx.arc((mostFV[0]-data[0].x)*650,-mostFV[1]*100,5,0,2*Math.PI,false);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.textAlign='center';
+        ctx.fillText(mostFV[0],(mostFV[0]-data[0].x)*650,-12);
+        ctx.fillText('大多數人得分',(mostFV[0]-data[0].x)*650,-(mostFV[1]*100+12));
+    }
+    //存储曲线极大值点坐标于myValuePosition数组里
+    var myValuePosition=[];
+    function getMyValuePosition(data,value){
+        $.each(data,function(i,item){
+            if(item.x-value==0){
+                myValuePosition=[value,item.y];
+                return false;
+            }
+        })
+    }
+    //绘制极大值点
+    function drawMyValue(data,value){
+        getMyValuePosition(data,value);
+        ctx.beginPath();
+        ctx.arc((myValuePosition[0]-data[0].x)*650,-myValuePosition[1]*100,5,0,2*Math.PI,false);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.fillText(myValuePosition[0],(myValuePosition[0]-data[0].x)*650,-12);
+        ctx.textAlign='left';
+        ctx.fillText('我的得分',(myValuePosition[0]-data[0].x)*650,-(myValuePosition[1]*100-14));
+        drawShadow(data,value);
+    }
+    //绘制“我的成绩”超出全班人数的阴影部分
+    function drawShadow(data,value){
+        ctx.beginPath();
+        ctx.moveTo(0,0);
+        ctx.lineWidth=3;
+        $.each(data,function(i,item){
+            ctx.lineTo((item.x-data[0].x)*650,-item.y*100);
+            if(item.x-value==0){
+                ctx.lineTo((value-data[0].x)*650,0);
+                ctx.lineTo(0,0);
+                ctx.fillStyle='rgba(189,234,253,.3)';
+                ctx.fill();
+                return false;
+            }
+        });
+        ctx.fill();
+    }
+    //写入下标题
+    function drawBotLabel(){
+        getRate(data,myValuePosition[0]);
+        ctx.beginPath();
+        ctx.textAlign='center';
+        ctx.font='22px arial';
+        ctx.fillStyle='#000';
+        ctx.fillText('你的GPA超過了'+Math.round(rate*100)+'%'+'的成功申請者',width/2,70);
+    }
+    //绘制学术表现超出率表
+    var rate=null;
+    function  getRate(data,value){
+        $.each(data,function(i,item){
+            if(item.x-value==0){
+                rate=i/data.length;
+            }
+        });
+    }
+
+    function drawRate(){
+        ctx.translate(300,250);
+        ctx.beginPath();
+        ctx.arc(0,0,100,-Math.PI/2,2*Math.PI*rate-Math.PI/2,false);
+        ctx.lineWidth=5;
+        ctx.strokeStyle='#5BB4D6';
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(0,0,100,2*Math.PI*rate-Math.PI/2,-Math.PI/2,false);
+        ctx.lineWidth=3;
+        ctx.strokeStyle='#F3F3F3';
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.font='50px arial';
+        ctx.fillStyle='#5BB4D6';
+        ctx.fillText(Math.round(rate*100)+'%',0,0);
+        ctx.beginPath();
+        ctx.font='22px arial';
+        ctx.fillStyle='#000';
+        ctx.fillText('學術表現勝出率',0,140);
+    }
+//函数归总
+    function  draw(data,value){
+        drawLeftLabel();
+        drawLabel();
+        drawLine(data);
+        judgeExtremum(data);
+        drawMmValue(data);
+        drawMostFrequentValue(data);
+        drawMyValue(data,value);
+        drawBotLabel();
+        drawRate(rate);
+    }
+
+        draw(data,3.8);//调用函数
+</script>
+</html>
